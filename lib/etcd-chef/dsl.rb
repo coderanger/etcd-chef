@@ -1,7 +1,7 @@
 class Chef
   class RunContext
     def etcd
-      @etcd_wrapper ||= EtcdWrapper.new(Etcd.client, [])
+      @etcd_wrapper ||= EtcdWrapper.new(Etcd.client(host: Chef::Config[:etcd_host], port: Chef::Config[:etcd_port]), [])
     end
   end
 

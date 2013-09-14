@@ -34,3 +34,9 @@ end
 This means that as soon as the cluster propagates a change, all `etcd-chef`
 daemons will activate. You may wish to set a `--splay` time if your recipe
 code involves non-local or contended resources.
+
+## Configuration
+
+By default an `etcd` instance on localhost will be used. You can customize this
+either via `--etcd-host` and `--etcd-port` command line options, or `etcd_host`
+and `etcd_port` in your configuration file.

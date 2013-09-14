@@ -1,10 +1,27 @@
 require 'chef/application/solo'
+require 'chef/config'
 require 'etcd'
+
+class Chef
+  class Config
+    etcd_host 'localhost'
+    etcd_port 4001
+  end
+end
 
 module EtcdChef
   class Application < Chef::Application::Solo
     self.options = Chef::Application::Solo.options
     self.banner Chef::Application::Solo.banner
+
+    option :etcd_host,
+      :long  => '--etcd-host HOSTNAME',
+      :description => 'The etcd host to use'
+
+    option :etcd_port,
+      :long  => '--etcd-port PORT',
+      :description => 'The etcd port to use',
+      :proc => lambda { |s| s.to_i }
 
     def run_application
       Chef::Config[:cookbook_path] = [Chef::Config[:cookbook_path]] if Chef::Config[:cookbook_path].is_a?(String)
@@ -30,7 +47,7 @@ module EtcdChef
       @chef_client = nil
       # After CHEF-4546 replace ^^ with super
 
-      @etcd ||= Etcd.client # TODO: Config
+      @etcd ||= Etcd.client(host: Chef::Config[:etcd_host], port: Chef::Config[:etcd_port], read_timeout: 2592000) # Set the timeout 30 days, pending https://github.com/ranjib/etcd-ruby/pull/7
       Chef::Log.debug("Starting etcd watch from index #{@etcd_index || 'nil'}")
       @etcd_index = @etcd.watch('/', @etcd_index).index
     rescue Exception
