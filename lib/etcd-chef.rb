@@ -7,7 +7,6 @@ module EtcdChef
     self.banner Chef::Application::Solo.banner
 
     def run_application
-      Chef::Config[:splay] = false
       Chef::Config[:cookbook_path] = [Chef::Config[:cookbook_path]] if Chef::Config[:cookbook_path].is_a?(String)
       Chef::Config[:cookbook_path].unshift(File.expand_path('../etcd-chef/cookbooks', __FILE__))
       @chef_client_json ||= {}
@@ -17,6 +16,7 @@ module EtcdChef
     end
 
     def run_chef_client
+      @original_interval ||= Chef::Config[:interval]
       Chef::Config[:interval] = 0
 
       # Pending https://tickets.opscode.com/browse/CHEF-4546
@@ -35,7 +35,7 @@ module EtcdChef
       @etcd_index = @etcd.watch('/', @etcd_index).index
     rescue Exception
       # Bump the interval since it should wait on errors, gets reset above
-      Chef::Config[:interval] = 300 # TODO: Configurable
+      Chef::Config[:interval] = @original_interval
       raise
     end
   end
