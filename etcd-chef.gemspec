@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.summary     = ''
   s.description = ''
 
-  s.files        = Dir.glob('{bin,lib}/**/*') + %w(LICENSE README.md ROADMAP.md CHANGELOG.md)
+  s.files        = Dir.glob('{bin,lib}/**/*') + %w(README.md)
   s.executables  = ['etcd-chef']
   s.require_path = 'lib'
 
