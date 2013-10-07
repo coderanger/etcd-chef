@@ -23,6 +23,11 @@ module EtcdChef
       :description => 'The etcd port to use',
       :proc => lambda { |s| s.to_i }
 
+    option :once,
+      :long => "--once",
+      :description => "Run etcd-chef once and exit",
+      :boolean => true
+
     def run_application
       Chef::Config[:cookbook_path] = [Chef::Config[:cookbook_path]] if Chef::Config[:cookbook_path].is_a?(String)
       Chef::Config[:cookbook_path].unshift(File.expand_path('../etcd-chef/cookbooks', __FILE__))
@@ -47,9 +52,13 @@ module EtcdChef
       @chef_client = nil
       # After CHEF-4546 replace ^^ with super
 
-      @etcd ||= Etcd.client(host: Chef::Config[:etcd_host], port: Chef::Config[:etcd_port], read_timeout: 2592000) # Set the timeout 30 days, pending https://github.com/ranjib/etcd-ruby/pull/7
-      Chef::Log.debug("Starting etcd watch from index #{@etcd_index || 'nil'}")
-      @etcd_index = @etcd.watch('/', @etcd_index).index
+      if Chef::Config[:once]
+        Chef::Application.exit! "Exiting", 0
+      else
+        @etcd ||= Etcd.client(host: Chef::Config[:etcd_host], port: Chef::Config[:etcd_port], read_timeout: 2592000) # Set the timeout 30 days, pending https://github.com/ranjib/etcd-ruby/pull/7
+        Chef::Log.debug("Starting etcd watch from index #{@etcd_index || 'nil'}")
+        @etcd_index = @etcd.watch('/', @etcd_index).index
+      end
     rescue Exception
       # Bump the interval since it should wait on errors, gets reset above
       Chef::Config[:interval] = @original_interval
